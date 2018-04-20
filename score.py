@@ -3,6 +3,7 @@ from math import log, sqrt
 from init import get_and_update
 import init as g
 
+
 small = pow(10,-100) # to avoid dividing by zero or doing log(0)
 kw_correl_th = 0.4
 
@@ -17,10 +18,14 @@ def get_kw_correl(w1, w2):
 def get_expanded_keywords(keywords):
     expanded_keywords = set([])
     keywords = set(keywords)
+    print("keywords before expanding: ", keywords)
     for k1 in keywords:
-        for k2 in g.cm[k1].iterkeys():
+        print("k1: ", k1)
+        for k2 in g.cm[k1].keys():
+            print("k2: ", k2)
             if k2 not in ('_S', '_E') and get_kw_correl(k1, k2) >= kw_correl_th:
                 expanded_keywords.add(k2)
+    print("keywords after expanding: ", keywords)
     return keywords.union(expanded_keywords)
 
 def get_correl(words, word2, case):
@@ -43,8 +48,8 @@ def get_correl(words, word2, case):
                     )
                 )
             )
-        except Exception, e:
-            print word_pair
+        except Exception as e:
+            print (word_pair)
             raise e
             
     return correl
@@ -54,9 +59,19 @@ def get_score(words, bigram, trigram_count, previous_bigram, case, keywords):
 
     # new word
     new_word = bigram[2 - case]
-    importance_score = log(g.nw[bigram])
-    frequent_word_penalty = log(g.ww[new_word])
-    cont_score = log(trigram_count * 1.0 / g.nw[previous_bigram])
+    if g.nw[bigram] == 0:
+        importance_score = 0
+    else:
+        importance_score = log(g.nw[bigram])
+    
+    if g.ww[new_word] == 0:
+        frequent_word_penalty = 0
+    else:
+        frequent_word_penalty = log(g.ww[new_word])
+    if g.nw[previous_bigram] == 0 or trigram_count == 0:
+        cont_score = 0
+    else: 
+        cont_score = log(trigram_count * 1.0 / g.nw[previous_bigram])
     sentence_score = get_correl(words, new_word, case)
     cluster_score = get_correl(keywords, new_word, case)
     #penalty_score = g.penalty[new_word] # use this for generating multi-sentence summaries

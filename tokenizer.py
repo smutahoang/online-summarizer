@@ -1,5 +1,6 @@
 import re
 
+
 def tokenize(original_text):
     text = original_text.lower()
     
@@ -8,7 +9,7 @@ def tokenize(original_text):
         u'\xe9': 'e',
         u'\xe1': 'a',
     }
-    for fr, to in chars.iteritems():
+    for fr, to in chars.items():
         text = text.replace(fr, to)
     
     text = re.sub(r'\\\\', r'\\', text)
@@ -23,7 +24,7 @@ def tokenize(original_text):
         'realmadrid': 'real madrid',
         'fcbarcelona': 'fc barcelona',
     }
-    for fr, to in pairs.iteritems():
+    for fr, to in pairs.items():
         text = text.replace(fr, to)
     
     # Remove urls
@@ -63,3 +64,10 @@ def tokenize(original_text):
     phrases = [ph for ph in phrases if ph]
     
     return phrases
+
+# hnt
+def mainTest():
+    text = "RT @amyharvard_: The federal lawsuit will be filed on behalf of more than 20 individuals. #muslimban https://t.co/lDUfnbSLpn";
+    tokenizer = tokenize(text);
+    print(tokenizer)
+    
