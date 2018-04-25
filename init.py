@@ -1,16 +1,20 @@
-from tokenizer import tokenize
-from frequency import get_wf, increase_wf
+from tweet_processing import extractTermInTweet
 import configure as c
 from collections import defaultdict
 
+
 # simple function to print the summaries
-def show_summaries(summaries, keywords=None):
+def show_summaries(summaries, currentTime, keywords=None):
+    file = open("{}/opinosis{}.txt".format(c.OUTPUT_PATH, currentTime), "w")
     for summary in summaries:
         l = len(summary) - 2
         if keywords:
-            print ('%s (%s): %s' % (l, ','.join(keywords), ' '.join(summary[1:-1])))
+            print ('%s (%s): %s' % (l, ','.join(keywords).encode(encoding='utf_8', errors='strict'), ' '.join(summary[1:-1]).encode(encoding='utf_8', errors='strict')))
+            file.write('%s\n' %(' '.join(summary[1:-1]).encode(encoding='utf_8', errors='strict')))
         else:
-            print ('%s: %s' % (l, ' '.join(summary[1:-1])))
+            print ('%s: %s' % (l, ' '.join(summary[1:-1].encode(encoding='utf_8', errors='strict'))))
+            file.write('%s\n' %(' '.join(summary[1:-1].encode(encoding='utf_8', errors='strict'))))
+    file.close()
 
 def initialize(tweet):
     global nw # node-weight: weights for each bigram
@@ -50,18 +54,18 @@ def  add_tweet_to_graph(tweet):
     global inverted_tweet_frequency
     
         
-    # Tokenize tweets, split in sentences
-    # and add markers for beginning and end of sentence
+#     # Tokenize tweets, split in sentences
+#     # and add markers for beginning and end of sentence
+    sentencesBeforeProcessing = tweet.text.split('. ')
     sentences = []
-    for sentence in tokenize(tweet.text):
-        sentence = ['_S'] + sentence + ['_E']
-        sentences.append(sentence)
-        
+      
+    
+    
     # compute word frequencies
-    for sentence in sentences:
-        for word in sentence:
-            if word == '_S' or word == '_E' or word == 'rt':
-                continue
+    for sentence in sentencesBeforeProcessing:
+        listOfTerms = extractTermInTweet(sentence)
+        for word in listOfTerms:
+            
             if word in word_frequency: 
                 word_frequency[word] += 1 
             else: 
@@ -70,7 +74,8 @@ def  add_tweet_to_graph(tweet):
                 inverted_tweet_frequency[word] = []
             if tweet.id not in inverted_tweet_frequency[word]:
                 inverted_tweet_frequency[word].append(tweet.id)
-
+        
+        sentences.append(['_S']+listOfTerms+['_E'])
     # compute word weight
     for sentence in sentences:
         for word in sentence:
@@ -91,7 +96,7 @@ def  add_tweet_to_graph(tweet):
     # will be used in computing a sentence score
     for sentence in sentences:
         for i in range(len(sentence) - 1):
-            w1 = sentence[i]
+            #w1 = sentence[i]
             for j in range(i + 1, len(sentence)):
                 add_one(4, (sentence[i], sentence[j]), tweet.createAt)
 

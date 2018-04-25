@@ -1,4 +1,7 @@
 INPUT_FILE = "travelBan_2017-01-27_graphFilteredTweets.txt"
+STOPWORD_PATH = "C:/Users/Huyen Nguyen/eclipse-workspace/OnlineSummarizer/data/stopwords";
+OUTPUT_PATH = "C:Users/Huyen Nguyen/eclipse-workspace/OnlineSummarizer/data/output/baselines/online"
+
 NUMBER_OF_TWEETS = 10
 
 TIME_STEP_WIDTH = 60*60*1000
