@@ -7,27 +7,27 @@ from heapq import heappush, heappop, nlargest
 from collections import defaultdict
 from score import get_score
 import math
+import frequency
 
 currentTweets = []
 
 
-def getSetOfKeywords():
-    heap = []
+def getSetOfKeywords(currentTime):
+    words = frequency.word_frequency.keys()
+    counts = {w: frequency.get_wf(w, g.ts) for w in words}
+    counts = {w: fl for w, fl in counts.items()
+            if ((fl[1] > 0 and fl[1] > c.KEYWORD_INCREASING_LEVEL * fl[0] and fl[0] !=0) or (fl[0] == 0 and fl[1] > 0.01))}
+    # hnt: normalize
+    mcounts = [(w, math.log((fl[1] + 0.003) / (max(fl[0],1) + 0.003))) for w, fl in counts.items()]
+    mcounts.sort(key = lambda x: -x[1], reverse = True)
+ 
     keywords = []
-    total = 0
-    for word, freq in g.word_frequency.items():
-        total += freq
-    for word, freq in g.word_frequency.items():
-        tfIdf = (freq / total) * math.log2(len(currentTweets) / len(g.inverted_tweet_frequency[word]))
-        heappush(heap, (-tfIdf, word))
-   
-    k = 0
-    while (k < c.NUMBER_OF_KEYWORDS and heap != None):
-        (tfIdf, word) = heappop(heap)
-        keywords.append(word)
-        k = k + 1
-    
+    for key, value in mcounts:
+        if(len(keywords) > c.NUMBER_OF_KEYWORDS):
+            break;
+        keywords.append(key)
     return keywords
+
 
 # fiding a summary starting from a keyword
 def build_summary(starting_summary, parent_keywords=[]):
@@ -89,7 +89,7 @@ def build_summary(starting_summary, parent_keywords=[]):
                 ),
                 bigr[0]
             )
-            for bigr in add_reverse if bigr[0]!=0
+            for bigr in add_reverse if bigr[0] != 0
         ]
 
         next_options = nlargest(5, next_options, key=lambda x: x[1])
@@ -123,19 +123,13 @@ def summarize_keywords(keywords, n, currentTime, expand=True):
     summaries = []
     g.penalty = defaultdict(lambda: 0)
     keywords = set(keywords)
-#     if expand:
-#         try:
-#             keywords = get_expanded_keywords(keywords)
-#         except Exception as e:
-#             print(e)
-#             return
+
     bigrams = [b for b in g.nw.items() if b[0][0] in keywords or b[0][1] in keywords]
     while len(summaries) < n:
         # select top starting bigrams that contain one of the keywords
         # to use as seeds for the sentences
         # put bigrams containing '_S' or '_E' further down the list
-        #hnt: bigrams: list of bigrams containing one of keywords
-        
+        # hnt: bigrams: list of bigrams containing one of keywords
         
         start = max(bigrams, key=lambda x: \
                 x[1] - 10 * g.penalty[x[0][0]] - 10 * g.penalty[x[0][1]] - 
@@ -149,11 +143,13 @@ def summarize_keywords(keywords, n, currentTime, expand=True):
             summaries.append(summary)
     show_summaries(summaries, currentTime, keywords=start)
 
+
 def getElapsedTime(currentTime, refTime, stepWidth):
     if (currentTime <= refTime):
         return 0
     
     return (int) ((currentTime - refTime) / stepWidth)
+
 
 def main() :
     file = open(c.INPUT_FILE, encoding="utf8")
@@ -161,7 +157,7 @@ def main() :
     nextUpdate = 0;
     nTweet = 0;
     
-    
+    time0 = time.time()
     # iterate tweets in file
     for line in file:
         
@@ -178,35 +174,47 @@ def main() :
             initialize(tweet)
             refTime = createAt
         currentTime = getElapsedTime(tweet.createAt, refTime, c.TIME_STEP_WIDTH);
-       
-            
+        
         add_tweet_to_graph(tweet)
         # generate summary
         if (c.UPDATING_TYPE == "PERIOD" and createAt >= nextUpdate):
             print("Number of tweets up to the current time: %d" % (nTweet))
             nextUpdate = createAt + c.TIME_STEP_WIDTH
             print("Number of nodes: %d" % (len(g.nw)))
-            g.prune(g.ts)  # pruning to get rid of some unimportant keywords
+            time1 = time.time()
+            if(currentTime > c.WINDOW_SIZE):
+                g.prune(g.ts)  # pruning to get rid of some unimportant keywords
+            time2 = time.time()
             for item in g.nw.items():  # iterate each node in the graph
                 get_and_update(2, g.nw, item[0], g.ts)  # apply decaying window
             
+            time3 = time.time()
     
-            keyword_set = getSetOfKeywords()
+            keyword_set = getSetOfKeywords(createAt)
+            time4 = time.time()
             print ("keywords: " , keyword_set)
-            runtime = time.time()
-            print("----->currentTime: %d" %currentTime)
+           
+            print("----->currentTime: %d" % currentTime)
             summarize_keywords(keyword_set, 3, currentTime)
-            runtime = time.time() - runtime
-            print ('(%s)' % runtime)
-            print ('----------------------------')
+            time5 = time.time()
 
+            print ('----------------------------')
+            
+            if(c.DEBUG == 1):
+                print("--> time for reading: %s (s)" % (time1 - time0))
+                print("--> time for pruning: %s (s)" % (time2 - time1))
+                print("--> time for decaying: %s (s)" % (time3 - time2))
+                print("--> time for getting keyword: %s (s)" % (time4 - time3))
+                print("--> time for summarizing: %s (s)" % (time5 - time4))
+            time0 = time.time()
     file.close()
     
     endTime = time.time()
-    print("Running time: %fms" % (endTime - startTime))
+    print("Running time: %f (s)" % (endTime - startTime))
     return
 
 # read the first tweet
+
 
 main()
 

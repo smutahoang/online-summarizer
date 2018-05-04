@@ -1,19 +1,20 @@
-from tweet_processing import extractTermInTweet
+#from tweet_processing import extractTermInTweet
 import configure as c
 from collections import defaultdict
-
+from tokenizer import tokenize
+from frequency import increase_wf
 
 # simple function to print the summaries
 def show_summaries(summaries, currentTime, keywords=None):
-    file = open("{}/opinosis{}.txt".format(c.OUTPUT_PATH, currentTime), "w")
+    file = open("{}/onlineSummarizer{}.txt".format(c.OUTPUT_PATH, currentTime), "w")
     for summary in summaries:
         l = len(summary) - 2
         if keywords:
-            print ('%s (%s): %s' % (l, ','.join(keywords).encode(encoding='utf_8', errors='strict'), ' '.join(summary[1:-1]).encode(encoding='utf_8', errors='strict')))
-            file.write('%s\n' %(' '.join(summary[1:-1]).encode(encoding='utf_8', errors='strict')))
+            print ('%s (%s): %s' % (l, ','.join(keywords), ' '.join(summary[1:-1])))
+            file.write('%s\n' %(' '.join(summary[1:-1])))
         else:
-            print ('%s: %s' % (l, ' '.join(summary[1:-1].encode(encoding='utf_8', errors='strict'))))
-            file.write('%s\n' %(' '.join(summary[1:-1].encode(encoding='utf_8', errors='strict'))))
+            print ('%s: %s' % (l, ' '.join(summary[1:-1])))
+            file.write('%s\n' %(' '.join(summary[1:-1])))
     file.close()
 
 def initialize(tweet):
@@ -33,8 +34,8 @@ def initialize(tweet):
     last_prune = start_time # --> check
     
     # initialize graph structure
-    word_frequency = {}
-    inverted_tweet_frequency = {}
+    word_frequency = defaultdict(lambda: 0)
+    inverted_tweet_frequency = defaultdict(set)
     ww = {}
     nw = {}
     ng = {}
@@ -54,28 +55,20 @@ def  add_tweet_to_graph(tweet):
     global inverted_tweet_frequency
     
         
-#     # Tokenize tweets, split in sentences
-#     # and add markers for beginning and end of sentence
-    sentencesBeforeProcessing = tweet.text.split('. ')
+    # Tokenize tweets, split in sentences
+    # and add markers for beginning and end of sentence
+    #Tokenize tweets, split in sentences
+    # and add markers for beginning and end of sentence
     sentences = []
-      
-    
-    
-    # compute word frequencies
-    for sentence in sentencesBeforeProcessing:
-        listOfTerms = extractTermInTweet(sentence)
-        for word in listOfTerms:
-            
-            if word in word_frequency: 
-                word_frequency[word] += 1 
-            else: 
-                word_frequency[word] = 1
-            if word not in inverted_tweet_frequency:
-                inverted_tweet_frequency[word] = []
-            if tweet.id not in inverted_tweet_frequency[word]:
-                inverted_tweet_frequency[word].append(tweet.id)
+    for sentence in tokenize(tweet.text):
+        sentence = ['_S'] + sentence + ['_E']
+        sentences.append(sentence)
         
-        sentences.append(['_S']+listOfTerms+['_E'])
+    # compute word frequencies
+    for sentence in sentences:
+        for word in sentence:
+            increase_wf(word, tweet.createAt)
+                
     # compute word weight
     for sentence in sentences:
         for word in sentence:
@@ -115,18 +108,19 @@ multpl_values = [1]
 
 def get_multpl(item, current_time):
     if type(item) == tuple:
-        item = ','.join(item) # to use less space
+        item = ',@'.join(item) # to use less space
 
     if item not in last_update:
         last_update[item] = start_time
-    diff = int(current_time - last_update[item])
+    diff = int((current_time - last_update[item])/1000)
     last_update[item] = current_time
-    while len(multpl_values) <= diff:
+    while len(multpl_values) <= diff: #(1-c)^(t_current - t_lastUpdate)
         multpl_values.append(multpl_values[-1] * c.MULTPL)
     return multpl_values[diff]
 
 def add_one(case, item, current_time):
     if case == 1:
+        # get current value of item in ww, if item not in ww, return 0
         ww[item] = ww.get(item, 0) * get_multpl(item, current_time) + 1
         
     elif case == 2:
@@ -174,7 +168,7 @@ def prune(current_time):
 
     # remove old items from last_update
     removed = [
-            tuple(k.split(',')) for k, v in last_update.items() \
+            tuple(k.split(',@')) for k, v in last_update.items() \
             if v <= current_time - c.WINDOW_SIZE * c.TIME_STEP_WIDTH
     ]
     last_update = {
@@ -185,7 +179,9 @@ def prune(current_time):
     for item in removed:
         try:
             if len(item) == 1:
+                #print("--> %s" %item[0])
                 del ww[item[0]]
+                #del inverted_tweet_frequency[item[0]]
 
             elif len(item) == 2:
                 del nw[item]

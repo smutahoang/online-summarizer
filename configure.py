@@ -1,10 +1,15 @@
-INPUT_FILE = "travelBan_2017-01-27_graphFilteredTweets.txt"
+INPUT_FILE = "C:/Users/Huyen Nguyen/eclipse-workspace/OnlineSummarizer/data/input/travelBan_2017-01-27_graphFilteredTweets.txt"
 STOPWORD_PATH = "C:/Users/Huyen Nguyen/eclipse-workspace/OnlineSummarizer/data/stopwords";
 OUTPUT_PATH = "C:Users/Huyen Nguyen/eclipse-workspace/OnlineSummarizer/data/output/baselines/online"
 
 NUMBER_OF_TWEETS = 10
+DEBUG = 1
 
-TIME_STEP_WIDTH = 60*60*1000
+TIME_STEP_WIDTH = 60 * 60 * 1000  # 1 hour
+KEYWORD_INCREASING_LEVEL = 2.5  # frequency of word in current window = 2* frequency in previous window
+NORMALIZING_FACTOR = 0.003  # normalize the novelty's s of keywords
+CURRENT_KEYWORD_WINDOW = 50* 60 * 1000 # 40P
+PREVIOUS_KEYWORD_WINDOW = 120 * 60 * 1000 # 2 day
 
 UPDATING_TYPE = "PERIOD"
 
