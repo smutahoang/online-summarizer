@@ -1,8 +1,8 @@
-#from tweet_processing import extractTermInTweet
+from tweet_processing import extractTermInTweet, getTermsWithoutStopWord
 import configure as c
+from frequency import increase_wf, increase_tf, increase_idf, increase_NofTweets
 from collections import defaultdict
-from tokenizer import tokenize
-from frequency import increase_wf
+
 
 # simple function to print the summaries
 def show_summaries(summaries, currentTime, keywords=None):
@@ -34,8 +34,7 @@ def initialize(tweet):
     last_prune = start_time # --> check
     
     # initialize graph structure
-    word_frequency = defaultdict(lambda: 0)
-    inverted_tweet_frequency = defaultdict(set)
+  
     ww = {}
     nw = {}
     ng = {}
@@ -55,43 +54,44 @@ def  add_tweet_to_graph(tweet):
     global inverted_tweet_frequency
     
         
-    # Tokenize tweets, split in sentences
-    # and add markers for beginning and end of sentence
-    #Tokenize tweets, split in sentences
-    # and add markers for beginning and end of sentence
-    sentences = []
-    for sentence in tokenize(tweet.text):
-        sentence = ['_S'] + sentence + ['_E']
-        sentences.append(sentence)
-        
+#     # Tokenize tweets, split in sentences
+#     # and add markers for beginning and end of sentence
+    
+    termsBeforeRemovingStopWords = extractTermInTweet(tweet.text)
+    termsAfterRemovingStopWords = getTermsWithoutStopWord(termsBeforeRemovingStopWords)
+    
+    sentence = ['_S'] + termsBeforeRemovingStopWords + ['_E']        
+    
+    list = set()
     # compute word frequencies
-    for sentence in sentences:
-        for word in sentence:
-            increase_wf(word, tweet.createAt)
-                
+    for word in termsAfterRemovingStopWords:
+        if(word in list):
+            continue;
+        list.add(word)
+        increase_idf(word, tweet.createAt)
+        
+    increase_NofTweets(tweet.createAt)
+
     # compute word weight
-    for sentence in sentences:
-        for word in sentence:
-            add_one(1, word, tweet.createAt)
+    for word in sentence:
+        add_one(1, word, tweet.createAt)
         
     # compute node (bigram) weight
-    for sentence in sentences:
-        for i in range(len(sentence) - 1):
-            add_one(2, (sentence[i], sentence[i + 1]), tweet.createAt)
+    for i in range(len(sentence) - 1):
+        add_one(2, (sentence[i], sentence[i + 1]), tweet.createAt)
         
     # compute word graph using bigrams
-    for sentence in sentences:
-        for i in range(len(sentence) - 2):
-            item = (sentence[i], sentence[i + 1], sentence[i + 2])
-            add_one(3, item, tweet.createAt)
+    
+    for i in range(len(sentence) - 2):
+        item = (sentence[i], sentence[i + 1], sentence[i + 2])
+        add_one(3, item, tweet.createAt)
             
     # compute correlation matrix between words
     # will be used in computing a sentence score
-    for sentence in sentences:
-        for i in range(len(sentence) - 1):
-            #w1 = sentence[i]
-            for j in range(i + 1, len(sentence)):
-                add_one(4, (sentence[i], sentence[j]), tweet.createAt)
+    for i in range(len(sentence) - 1):
+        #w1 = sentence[i]
+        for j in range(i + 1, len(sentence)):
+            add_one(4, (sentence[i], sentence[j]), tweet.createAt)
 
     # prune?
     #if t['ts'] > last_prune + forget_last_update:
@@ -179,9 +179,7 @@ def prune(current_time):
     for item in removed:
         try:
             if len(item) == 1:
-                #print("--> %s" %item[0])
                 del ww[item[0]]
-                #del inverted_tweet_frequency[item[0]]
 
             elif len(item) == 2:
                 del nw[item]

@@ -12,7 +12,7 @@ def tokenize(original_text):
     for fr, to in chars.items():
         text = text.replace(fr, to)
     
-    text = re.sub(r'\\\\', r'\\', text)
+    #text = re.sub(r'\\\\', r'\\', text)
     text = re.sub(r'\\\\', r'\\', text)
     text = re.sub(r'\\x\w{2,2}', ' ', text)
     text = re.sub(r'\\u\w{4,4}', ' ', text)
@@ -28,11 +28,11 @@ def tokenize(original_text):
         text = text.replace(fr, to)
     
     # Remove urls
-    text = re.sub(r'\w+:\/\/\S+', r' \n ', text) #hnt: dont remove urls
+    #text = re.sub(r'\w+:\/\/\S+', r' \n ', text) #hnt: dont remove urls
     
     # Ignore usernames and hashtags
-    #text = text.replace('@', ' ')
-    #text = text.replace('#', ' ')
+    text = text.replace('@', ' ')
+    text = text.replace('#', ' ')
     
     # Other fixes
     text = text.replace('&gt;', ' ')
@@ -47,8 +47,8 @@ def tokenize(original_text):
     
     # Format whitespaces
     text = text.replace('"', ' ')
-    #text = text.replace('\'', ' ')
-    #text = text.replace('_', '')
+    text = text.replace('\'', ' ')
+    text = text.replace('_', '')
     text = text.replace('-', ' ')
     text = text.replace('=', ' ')
     text = re.sub(' +',' ', text)
@@ -59,17 +59,17 @@ def tokenize(original_text):
     text = re.sub(r'([a-zA-Z])\1\1+(\w*)', r'\1\1\2', text)
     
     # Split in phrases
-    phrases = re.split(r'[?!;\.()]', text) #dont split sentence when reading :
+    phrases = re.split(r'[?!;\.()\n]', text) #dont split sentence when reading :
     #phrases = re.split(r'[?!;:\.()\n]', text)
-    phrases = [re.findall(r'[\w@\']+', ph) for ph in phrases]
+    phrases = [re.findall(r'[\w%\*&#]+', ph) for ph in phrases]
     phrases = [ph for ph in phrases if ph]
     
     return phrases
 
 # hnt
 def mainTest():
-    text = "Hilarious Cartoon Reveals How Dem Obstruction Works With Trump https://t.co/P9xOJd3lFU #MuslimBan The Trump W";
+    text = "RT @amyharvard_: The federal lawsuit will be filed on behalf of more than 20 individuals. #muslimban https://t.co/lDUfnbSLpn";
     tokenizer = tokenize(text);
     print(tokenizer)
 
-#mainTest()
+mainTest()

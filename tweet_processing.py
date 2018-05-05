@@ -136,11 +136,15 @@ def extractTermInTweet(inputText):
         
         if (containCharacterORNumber(chars, i, j)):
             term = ''.join(chars[i:j])
-            if (term not in stopWords):
-                terms.append(term)
+            #if (term not in stopWords):
+            terms.append(term)
         i = j;
     return terms 
     
+def getTermsWithoutStopWord(terms):
+    
+    result = [term for term in terms if term not in stopWords]
+    return result
     
 def removeSymbolInWord(chars, start, end) :
 
@@ -474,15 +478,15 @@ def init():
     return
 
 # def main():
-#     
-#     message = "__the _federal lawsuit will be filed on behalf of more than 20 individuals  #muslimban https://t.co/lDUfnbSLpn";
+#        
+#     message = "RT @MPower_Chang\e: Sign and share: Reject Trump and his #MuslimBan #NoBanNoWall https://t.co/F243bBVdq3 https://t.co/9VSgOVr5eP";
 #     print("message:", message)
 #     result = extractTermInTweet(message)
 #     print("", result)
-    
-
-
-
+#     result1 = getTermsWithoutStopWord(result)
+#     print(result1)
+#       
+# main()
 
 
     
