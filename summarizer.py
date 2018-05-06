@@ -94,7 +94,7 @@ def getKeywordsUsingTrendingTopic(currentTime):
 
 # fiding a summary starting from a keyword
 def build_summary(starting_summary, parent_keywords=[]):
-
+    print("---->expanding paths")
     partial_summary = (
         list(starting_summary),  # summary until this point
         0,  # score until this point
@@ -191,7 +191,10 @@ def summarize_keywords(createAt, n, currentTime, expand=True):
         bigrams = [b for b in g.nw.items() if b[0][0] in keywords or b[0][1] in keywords]
         
     elif(c.KEYWORD_SCHEME == c.KeywordGettingScheme.TRENDINGTOPIC):
-        keywords = getKeywordsUsingTrendingTopic(createAt)
+        if(currentTime == 1):
+            keywords = getKeywordsUsingTfIdfs(createAt) 
+        else: 
+            keywords = getKeywordsUsingTrendingTopic(createAt)
         bigrams = [b for b in g.nw.items() if b[0][0] in keywords or b[0][1] in keywords]
         
     else:
@@ -205,7 +208,8 @@ def summarize_keywords(createAt, n, currentTime, expand=True):
                 keywords.add(bigrams[i][0][1])
                 k = k+1
             i = i+1
-    print(keywords)
+    print("keyword: ", keywords)
+    print("--> generate summary:")
     while len(summaries) < n:
         # select top starting bigrams that contain one of the keywords
         # to use as seeds for the sentences

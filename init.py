@@ -65,6 +65,7 @@ def  add_tweet_to_graph(tweet):
     list = set()
     # compute word frequencies
     for word in termsAfterRemovingStopWords:
+        increase_wf(word, tweet.createAt)
         if(word in list):
             continue;
         list.add(word)

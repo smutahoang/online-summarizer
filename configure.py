@@ -30,7 +30,7 @@ NUMBER_OF_KEYWORDS = 5
 # constants for getting keywords using tf-idf
 
 # constants for getting keywords using trending topic based approach
-CURRENT_KEYWORD_WINDOW = 50* 60 * 1000 # 40P
+CURRENT_KEYWORD_WINDOW = 60* 60 * 1000 # 40P
 PREVIOUS_KEYWORD_WINDOW = 120 * 60 * 1000 # 2 day
 KEYWORD_INCREASING_LEVEL = 2.5  # frequency of word in current window = 2* frequency in previous window
 NORMALIZING_FACTOR = 0.003  # normalize the novelty's s of keywords
