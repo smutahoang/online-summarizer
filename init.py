@@ -6,6 +6,7 @@ from collections import defaultdict
 
 # simple function to print the summaries
 def show_summaries(summaries, currentTime, keywords=None):
+    print(keywords)
     file = open("{}/onlineSummarizer{}.txt".format(c.OUTPUT_PATH, currentTime), "w")
     for summary in summaries:
         l = len(summary) - 2

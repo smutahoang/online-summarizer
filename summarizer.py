@@ -59,9 +59,8 @@ def getKeywordsUsingPageRank(currentTime):
         for node in g.ng:
             newTermImportance[node] = (1-c.DAMPING_FACTOR) /len(g.ng)
         for node in g.ng:
-            if node[0] == '_S' or node not in g.ing.items():
+            if node[0] == '_S' or node not in g.ing.keys():
                 continue
-            
             
             incomingNodes = g.ing[node]
             for inNode in incomingNodes:
@@ -204,7 +203,7 @@ def summarize_keywords(createAt, n, currentTime, expand=True):
             if(bigrams[i][0][0] not in tweet_processing.stopWords and bigrams[i][0][0] not in keywords):
                 keywords.add(bigrams[i][0][0])
                 k = k+1
-            if(bigrams[i][0][1] not in tweet_processing.stopWords and bigrams[i][0][0] not in keywords):
+            if(bigrams[i][0][1] not in tweet_processing.stopWords and bigrams[i][0][1] not in keywords):
                 keywords.add(bigrams[i][0][1])
                 k = k+1
             i = i+1
@@ -222,7 +221,7 @@ def summarize_keywords(createAt, n, currentTime, expand=True):
                 (0 if x[0][0] != '_S' and x[0][1] != '_E' else 100))
 
         start = start[0]
-
+        print("keyword: %s", ', '.join(start))
         summary = build_summary(start, keywords)
 
         if summary:
