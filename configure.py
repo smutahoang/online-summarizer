@@ -9,13 +9,18 @@ OUTPUT_PATH = "C:Users/Huyen Nguyen/eclipse-workspace/OnlineSummarizer/data/outp
 
 UpdatingScheme = enum(PERIOD = 'PERIOD', TWEET_COUNT = 'TWEET_COUNT')
 KeywordGettingScheme = enum(TFIDF = 'TFIDF', PAGERANK = 'PAGERANK', TRENDINGTOPIC = 'TRENDINGTOPIC')
+MAXIMAL_TIME_FOR_GETTING_A_TWEET = 10*60
+MAXIMAL_OCCURRENCE_OF_A_WORD = 3
 
+MAXIMAL_LENGTH_OF_A_TWEET = 20
+MINIMAL_LENGTH_OF_A_TWEET = 8
 # constants for summarization
-NUMBER_OF_TWEETS = 4 # #tweets in final summarization for each sliding window
+NUMBER_OF_TWEETS = 20 # #tweets in final summarization for each sliding window
 TIME_STEP_WIDTH = 60 * 60 * 1000  # 1 hour
 WINDOW_SIZE = 12
 UPDATING_TYPE = UpdatingScheme.PERIOD
-KEYWORD_SCHEME = KeywordGettingScheme.PAGERANK
+KEYWORD_SCHEME = KeywordGettingScheme.TFIDF
+NUMBER_OF_LOCAL_MAX = 2
 
 TWEET_WINDOW = 1000
 DEBUG = 1
@@ -26,7 +31,7 @@ DEBUG = 1
 # 0.00005 - 10h window
 MULTPL = 1 - 0.0005
 
-NUMBER_OF_KEYWORDS = 5
+NUMBER_OF_KEYWORDS = 20
 # constants for getting keywords using tf-idf
 
 # constants for getting keywords using trending topic based approach

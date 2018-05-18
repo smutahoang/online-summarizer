@@ -478,14 +478,14 @@ def init():
     return
 
 # def main():
-#        
+#         
 #     message = "RT @MPower_Chang\e: Sign and share: Reject Trump and his #MuslimBan #NoBanNoWall https://t.co/F243bBVdq3 https://t.co/9VSgOVr5eP";
 #     print("message:", message)
 #     result = extractTermInTweet(message)
 #     print("", result)
 #     result1 = getTermsWithoutStopWord(result)
 #     print(result1)
-#       
+#        
 # main()
 
 

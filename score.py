@@ -59,6 +59,7 @@ def get_score(words, bigram, trigram_count, previous_bigram, case, keywords):
 
     # new word
     new_word = bigram[2 - case]
+    
     if g.nw[bigram] == 0:
         importance_score = 0
     else:
